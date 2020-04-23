@@ -13,12 +13,8 @@
  ******************************************************************************/
 package com.checkmarx.engine;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.number.OrderingComparison.greaterThan;
-import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
+import static org.hamcrest.Matchers.*;
 
 import org.jasypt.util.text.BasicTextEncryptor;
 import org.junit.Before;
@@ -47,12 +43,12 @@ public class CxConfigTests extends CoreSpringTest {
 		
 		log.info("{}", config);
 		
-		assertThat(config.getCxEngineUrlPath(), is(not(isEmptyOrNullString())));
-		assertThat(config.getPassword(), is(not(isEmptyOrNullString())));
+		assertThat(config.getCxEngineUrlPath(), is(not(emptyOrNullString())));
+		assertThat(config.getPassword(), is(not(emptyOrNullString())));
 		assertThat(config.getQueueCapacity(), is(greaterThan(0)));
 		assertThat(config.getQueueIntervalSecs(), is(greaterThan(0)));
-		assertThat(config.getRestUrl(), is(not(isEmptyOrNullString())));
-		assertThat(config.getUserName(), is(not(isEmptyOrNullString())));
+		assertThat(config.getRestUrl(), is(not(emptyOrNullString())));
+		assertThat(config.getUserName(), is(not(emptyOrNullString())));
 		assertThat(config.getTimeoutSecs(), is(greaterThan(0)));
 		
 		//test encrypted property

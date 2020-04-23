@@ -47,5 +47,6 @@ Using
 ./gradlew bootRun or ./gradlew clean bootRun
 ```
 
-
+#### DB Changes
+There is a value that needs to be updated in the dbo. CxComponentConfiguration table -> NumberOfPromotableScans needs to have a value set to 0 (it is initially 3).
 

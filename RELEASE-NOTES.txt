@@ -1,9 +1,18 @@
+USAGE:
+    java -Djasypt.encryptor.password=<key> -jar cx-dyn-engines-X.X.X-SNAPSHOT.jar
+
+v1.4
+    - Enhance dynamic engine stats including:
+      - scan counter
+      - accurate engine time tracking (run, idle, scanning, stopped)
+v1.3
+    - Update to allow for minimum number of running engines under the control of dynamic engines (always on)
+v1.2
+    - Update authentication to use OIDC instead of Cookie Session
 v1.1
     - Leverage AWS SSM for shutdown behavior
     - Introduce ability to gracefully handle restart of DE during mid-scan
     - Adding Azure Implementation option
-USAGE:
-    java -Djasypt.encryptor.password=<key> -jar cx-dyn-engines-X.X.X-SNAPSHOT.jar
 v1.0.1
     - Adding logic to filter EC2 instances based on custom tags to allow for multiple DE instances on the same AWS account
 v1.0

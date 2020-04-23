@@ -13,22 +13,8 @@
  ******************************************************************************/
 package com.checkmarx.engine.azure;
 
-import com.checkmarx.engine.utils.TaskManager;
-import com.google.common.base.Stopwatch;
-import com.microsoft.azure.management.Azure;
-import com.microsoft.azure.management.compute.*;
-import com.microsoft.azure.management.network.Network;
-import com.microsoft.azure.management.network.PublicIPAddress;
-import com.microsoft.azure.management.resources.fluentcore.arm.Region;
-import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Profile;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
-import org.springframework.stereotype.Component;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import static com.microsoft.azure.management.resources.fluentcore.utils.SdkContext.randomResourceName;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -37,7 +23,26 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import static com.microsoft.azure.management.resources.fluentcore.utils.SdkContext.randomResourceName;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.stereotype.Component;
+
+import com.google.common.base.Stopwatch;
+import com.microsoft.azure.management.Azure;
+import com.microsoft.azure.management.compute.PowerState;
+import com.microsoft.azure.management.compute.VirtualMachine;
+import com.microsoft.azure.management.compute.VirtualMachineCustomImage;
+import com.microsoft.azure.management.compute.VirtualMachineSizeTypes;
+import com.microsoft.azure.management.network.Network;
+import com.microsoft.azure.management.network.PublicIPAddress;
+import com.microsoft.azure.management.resources.fluentcore.arm.Region;
+import com.microsoft.azure.management.resources.fluentcore.model.Creatable;
 
 /**
  * Launches and terminates Azure VM instances from a specified image.
@@ -50,14 +55,12 @@ import static com.microsoft.azure.management.resources.fluentcore.utils.SdkConte
 public class AzureClient implements AzureComputeClient {
 	private final Azure client;
 	private final AzureEngineConfig config;
-	private final TaskManager taskManager;
 
 	private static final Logger log = LoggerFactory.getLogger(AzureClient.class);
 
-	public AzureClient(Azure client, AzureEngineConfig config, TaskManager taskManager) {
+	public AzureClient(Azure client, AzureEngineConfig config) {
 		this.client = client;
 		this.config = config;
-		this.taskManager = taskManager;
 
 		log.info("ctor(): {}", this);
 	}

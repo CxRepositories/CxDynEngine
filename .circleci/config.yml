@@ -1,0 +1,92 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - restore_cache:
+          key: v1-gradle-cache-{{ checksum "build.gradle" }}
+      - run: chmod u+x gradlew
+      - run: mkdir ./release
+      - run: |
+          VERSION=$(cat ./version.txt)
+          ./gradlew clean build -Pazure -x test
+          cp cx-dyn-engines-app/build/libs/cx-dyn-engines-app-${VERSION}-SNAPSHOT.jar ./release/cx-dyn-engines-app-AZURE-${VERSION}-SNAPSHOT.jar
+          ./gradlew clean build -Paws -x test
+          cp cx-dyn-engines-app/build/libs/cx-dyn-engines-app-${VERSION}-SNAPSHOT.jar ./release/cx-dyn-engines-app-AWS-${VERSION}-SNAPSHOT.jar
+      - save_cache:
+          paths:
+            - ~/.gradle/wrapper
+          key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      - save_cache:
+          paths:
+            - ~/.gradle/caches
+          key: v1-gradle-cache-{{ checksum "build.gradle" }}
+      - store_artifacts:
+          path: ./release
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./release/*
+            - Dockerfile-aws
+            - Dockerfile-azure
+            - version.txt
+
+  docker-push:
+    docker:
+      - image: docker:18.06.3-ce-git
+        environment:
+          DOCKER_REPO: docker.io/checkmarxts/cxdynengine
+    steps:
+      - setup_remote_docker
+      - attach_workspace:
+          at: .
+      - deploy:
+          name: Publish application to docker hub
+          command: |
+            VERSION=$(cat ./version.txt)
+            mkdir -p ./cx-dyn-engines-app/build/libs
+            cp ./release/* ./cx-dyn-engines-app/build/libs/
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io
+            docker build -f Dockerfile-aws -t ${DOCKER_REPO}:aws-${VERSION} .
+            docker build -f Dockerfile-azure -t ${DOCKER_REPO}:azure-${VERSION} .
+            docker push ${DOCKER_REPO}
+
+  publish-github-release:
+    docker:
+      - image: circleci/golang:1.9
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            go get github.com/tcnksm/ghr
+            VERSION=$(cat ./version.txt)
+            rm ./version.txt
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${VERSION} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./release/
+
+workflows:
+  version: 2
+  build_deploy:
+    jobs:
+      - build
+      - docker-push:
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build
+      - publish-github-release:
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - build

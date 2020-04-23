@@ -1,3 +1,9 @@
+# only needed if using groovy scripting, to avoid Spring template warning
+spring:
+  groovy:
+    template:
+      check-template-location: false
+
 server:
   port: 8585 #Port for webserver to run (/health endpoint can be used to monitor service is up)
 
@@ -44,6 +50,7 @@ cx-aws-engine:
   launchTimeoutSec: 60 #Amount of time to wait for an instance to move out of PENDING state in AWS
   monitorPollingIntervalSecs: 10 #Number of seconds before checking both Instance state and checking if the the HTTP endpoint is available on the Engine
   scriptOnLaunch: scripts/launch.groovy
+  scriptOnStop: scripts/stop.groovy
   scriptOnTerminate: scripts/terminate.groovy
   securityGroup: sg-04ed28298b8ec3106 #AWS Security Group to apply to launched Engines
   stopWaitTimeSecs: 30    #time to wait for a stopping engine before attempting to start 
@@ -58,24 +65,24 @@ cx-engine:
   engineExpireIntervalSecs: 3600 #Blocks of time an instance is paid by - this is used for expiring/termination of instances
   enginePrefix: cx-engine #Prefix given to naming the instance within the cloud provider
   pool:
-    - count: 3 #Maximum number of instances that will be launched for this pool mapping
-      minimum: 0 #Leave as zero to ensure engines are cleaned up, otherwise engines will stay at a minimum count once one is launched
-      scanSize:
+    - count: 3 # Maximum number of instances that can be launched for this pool size
+      minimum: 1 # Minimum number of instances to leave running at all times.  These will be launched on startup, if not already running.
+      scanSize: # Name and LOC range for the above pool
+        name: S # Name of this engine pool/size
+        minLOC: 0
         maxLOC: 250000
-        minLOC: 100000
-        name: S #Name to map to the cx-aws-engine.engineSizeMap
     - count: 3
       minimum: 0
       scanSize:
-        maxLOC: 1000000
-        minLOC: 250000
         name: M
+        minLOC: 250001
+        maxLOC: 1000000
     - count: 1
       minimum: 0
       scanSize:
-        maxLOC: 2500000
-        minLOC: 1000000
         name: L
+        minLOC: 1000001
+        maxLOC: 2500000
     - count: 1
       minimum: 0
       scanSize:

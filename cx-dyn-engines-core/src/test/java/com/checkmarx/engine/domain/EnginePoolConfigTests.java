@@ -47,6 +47,8 @@ public class EnginePoolConfigTests extends CoreSpringTest {
 		
 		log.info("{}", config);
 		
+		config.validate();
+		
 		assertThat(config.getEnginePrefix(), is("cx-engine"));
 		assertThat(config.getEngineExpireIntervalSecs(), is(greaterThan(1)));
 		

@@ -13,11 +13,8 @@
  ******************************************************************************/
 package com.checkmarx.engine.utils;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
+import static org.hamcrest.Matchers.*;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -32,7 +29,7 @@ public class ManifestUtilsTests {
 
 		final String stringVersion = ManifestUtils.getVersion(String.class);
 		log.debug("version={}", stringVersion);
-		assertThat(stringVersion, is(not(isEmptyOrNullString())));
+		assertThat(stringVersion, is(not(emptyOrNullString())));
 		
 		final String version1 = ManifestUtils.getVersion(ManifestUtils.class);
 		log.debug("version={}", version1);

@@ -13,20 +13,26 @@
  ******************************************************************************/
 package com.checkmarx.engine.azure;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+import java.util.List;
+import java.util.Map;
+
+import org.junit.After;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.checkmarx.engine.servers.CxEngines;
 import com.checkmarx.engine.servers.CxEngines.CxServerRole;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.microsoft.azure.management.compute.VirtualMachine;
-import org.junit.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import java.util.List;
-import java.util.Map;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
 
 public class AzureClientTests extends AzureSpringTest {
 	
@@ -63,7 +69,6 @@ public class AzureClientTests extends AzureSpringTest {
 		
 		final String name = "cx-test1";
 		final String instanceType = "Standard_B2s";
-		//final String instanceType = "m4.large";
 		final String version = "8.9.0-HF1";
 		final CxServerRole role = CxServerRole.ENGINE;
 		
@@ -72,21 +77,20 @@ public class AzureClientTests extends AzureSpringTest {
 		final VirtualMachine instance = azureClient.launch(name, instanceType, tags);
 		instances.add(instance.id());
 		
-		assertNotNull(instance);
+		assertThat(instance, is(notNullValue()));
 		assertThat(instance.name(), is(name));
 		assertThat(VM.getTag(instance, CxEngines.CX_ROLE_TAG), is(role.toString()));
 		assertThat(VM.getTag(instance, CxEngines.CX_VERSION_TAG), is(version));
-		assertEquals(instanceType.toUpperCase(), instance.size().toString().toUpperCase());
-		//assertEquals(config.getImageId(), instance.getImageId());
-		assertEquals(config.getSubnetName(), instance.getPrimaryNetworkInterface().primaryIPConfiguration().subnetName());
+		assertThat(instanceType, is(equalToIgnoringCase(instance.size().toString())));
+		assertThat(config.getSubnetName(), is(instance.getPrimaryNetworkInterface().primaryIPConfiguration().subnetName()));
 	}
 
 	@Test
 	public void testLaunchStart() throws Exception {
 		log.trace("testLaunchStart()");
 
-		final String name = "cx-test1";
-		final String instanceType = "Standard_B2s";
+		//final String name = "cx-test1";
+		//final String instanceType = "Standard_B2s";
 		//final String instanceType = "m4.large";
 		final String version = "8.9.0-HF1";
 		final CxServerRole role = CxServerRole.ENGINE;

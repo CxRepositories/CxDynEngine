@@ -138,10 +138,10 @@ public class EngineManager implements Runnable {
 		
 		try {
 		    taskManager.addExecutor("EngineManager", managerExecutor);
-            taskManager.addExecutor("ScanQueuedExecutor", managerExecutor);
-            taskManager.addExecutor("ScanFinishedExecutor", managerExecutor);
-            taskManager.addExecutor("EngineExpiredExecutor", managerExecutor);
-            taskManager.addExecutor("IdleEngineMonitor", managerExecutor);
+            taskManager.addExecutor("ScanQueuedExecutor", scanQueuedExecutor);
+            taskManager.addExecutor("ScanFinishedExecutor", scanFinishedExecutor);
+            taskManager.addExecutor("EngineExpiringExecutor", engineExpiringExecutor);
+            taskManager.addExecutor("IdleEngineExecutor", idleEngineExecutor);
 
             final IdleEngineMonitor engineMonitor = 
                     pool.createIdleEngineMonitor(this.expiredEnginesQueue, config.getExpireEngineBufferMins());
@@ -176,15 +176,17 @@ public class EngineManager implements Runnable {
     public void initialize() {
         log.debug("initialize()");
         
-        log.info("Logging into CxManager; url={}, user={}", config.getRestUrl(), config.getUserName()); 
-        if (!cxClient.login()) {
-            throw new RuntimeException("Unable to login to CxManager, shutting down...");
-        }
+//        log.info("Logging into CxManager; url={}, user={}", config.getRestUrl(), config.getUserName());
+//        if (!cxClient.login()) {
+//            throw new RuntimeException("Unable to login to CxManager, shutting down...");
+//        }
 
         final List<EngineServer> registeredEngines = findRegisteredDynEngines();
         final List<ScanRequest> activeScans = findActiveScans();
         final List<DynamicEngine> activeEngines = checkPreExistingEngines(activeScans, registeredEngines);
         trackPreExistingScans(activeEngines, activeScans);
+        spinMinIdleEngines();
+        
         //unregisterStaleEngines(activeEngines);
         registerQueuingEngine();
         log.info("initialize complete: {}", pool);
@@ -301,24 +303,51 @@ public class EngineManager implements Runnable {
 				.filter(engine -> engine.getHost() != null) //a host object reference here is the only indication of a running server
 				.collect(Collectors.toList());
 
-		// make sure idle engines are not registered with CxManager
-		unRegisterIdleEngines(idleEngines, registeredEngines);
 		// add idle engines to the pool
-		idleEngines.forEach(engine -> addEngineToPool(engine));
+		idleEngines.forEach(engine -> {
+		    addEngineToPool(engine);
+		    engine.onIdle();
+		});
 
         //Check the active scans,
         scanningEngines.forEach((engine) -> {
             if (!addEngineToPool(engine)) return;
             if (checkForActiveScan(engine, activeScans)) {
                 activeEngines.add(engine);
-                engine.setState(State.SCANNING);
+                engine.onScan();
+                //engine.setState(State.SCANNING);
             } else {
                 idleEngines.add(engine);
                 engineProvisioner.onScanRemoved(engine);  //remove reference to the invalid scan id
+                engine.onIdle();
             }
         });
 
+        // make sure idle engines are not registered with CxManager
+        unRegisterIdleEngines(idleEngines, registeredEngines);
+
         return activeEngines;
+    }
+
+    private void spinMinIdleEngines() {
+        log.debug("spinMinIdleEngines()");
+        
+        List<DynamicEngine> idleEngines = pool.allocateMinIdleEngines();
+        log.info("Launching minimum idle engines; count={}", idleEngines.size());
+        idleEngines.forEach((engine) -> {
+            launchIdleEngine(engine);
+        });
+    }
+    
+    private void launchIdleEngine(DynamicEngine engine) {
+        try {
+            final EngineSize size = pool.getEngineSize(engine.getSize());
+            engineProvisioner.launch(engine, size, false);
+            engine.onIdle();
+        } catch (InterruptedException e) {
+            // if interrupted, continue
+            log.warn("Spinning idle engine interrupted, continuing...");
+        }
     }
 
     private boolean addEngineToPool(DynamicEngine engine) {
@@ -338,7 +367,8 @@ public class EngineManager implements Runnable {
             List<EngineServer> registeredEngines) {
         
         idleEngines.forEach(engine -> {
-            engine.setState(State.IDLE);
+            //engine.setState(State.IDLE);
+            engine.onIdle();
             final String sEngineId = engine.getEngineId();
             if (Strings.isNullOrEmpty(sEngineId)) {
                 return;
@@ -489,6 +519,8 @@ public class EngineManager implements Runnable {
 		private boolean allocateNewEngine(EngineSize size, ScanRequest scan) throws InterruptedException {
 			log.trace("allocateNewEngine(): size={}; {}", scan, size);
 
+			if (atScanLimit()) return false;
+			
 			final State state = DynamicEngine.State.UNPROVISIONED;
 			final DynamicEngine engine = pool.allocateEngine(size, state);
 			
@@ -504,7 +536,12 @@ public class EngineManager implements Runnable {
             }
 		}
 		
-		private void blockScan(EngineSize size, ScanRequest scan) {
+		private boolean atScanLimit() {
+            // TODO implement
+            return false;
+        }
+
+        private void blockScan(EngineSize size, ScanRequest scan) {
 			log.trace("blockScan(): size={}; {}", size, scan);
 			
 			Queue<ScanRequest> blockedQueue = blockedScansQueueMap.get(size);
@@ -530,6 +567,7 @@ public class EngineManager implements Runnable {
 			EngineServer cxEngine = createEngine(dynEngine.getName(), scan, dynEngine.getUrl());
 			cxEngine = registerCxEngine(scanId, cxEngine);
 			
+			dynEngine.onScan();
 			trackEngineScan(scan, cxEngine, dynEngine);
 
 			log.info("Engine allocated for scan: fromState={}; engine={}; scan={}", fromState, dynEngine, scan);
@@ -547,9 +585,13 @@ public class EngineManager implements Runnable {
 
 		private EngineServer createEngine(String name, ScanRequest scan, String url) {
 		    final String engineName = computeCxEngineName(name);
-			final int size = scan.getLoc(); 
+
+		    // rjg - Issue 14: CxMgr has a defect with 0 LOC scans, which will cause Engine 
+		    // 		registration failure (400).  Workaround set maxLoc to 1 when LOC is 0. 
+			final int minLoc = scan.getLoc();
+			final int maxLoc = minLoc > 0 ? minLoc : 1;
 			
-			return new EngineServer(engineName, url, size, size, 1, false);
+			return new EngineServer(engineName, url, minLoc, maxLoc, 1, false);
 		}
 
         private boolean checkActiveEngines(EngineSize size, ScanRequest scan) {
@@ -616,9 +658,7 @@ public class EngineManager implements Runnable {
 				final DynamicEngine engine = cxEngines.get(engineId);
 				unRegisterEngine(engineId);
 				engineProvisioner.onScanRemoved(engine);
-				engine.setScanId(null);
-				engine.setEngineId(null);
-				pool.idleEngine(engine);
+				engine.onIdle();
 				
 				engineScans.remove(scanId);
 				cxEngines.remove(engineId);
@@ -701,7 +741,8 @@ public class EngineManager implements Runnable {
 		private void stopEngine(DynamicEngine engine) {
 			log.debug("stopEngine(): {}", engine);
 			
-			pool.deallocateEngine(engine);
+			engine.onStop();
+			//pool.deallocateEngine(engine);
 			engineProvisioner.stop(engine);
 
 			log.info("Idle engine expired, engine deallocated: engine={}", engine);

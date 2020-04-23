@@ -149,7 +149,7 @@ public class ScanQueueMonitor implements Runnable {
 		}
 
 		log.debug("scan queued, adding to scanQueued queue; id={}", scanId);
-		final int count = concurrentScans.incrementAndGet();
+		final int count = concurrentScans.get();
 		scanQueued.add(scan);
 		activeScanMap.put(scanId, scan);
 		log.info("Scan queued: {}; concurrentCount={}; concurrentLimit={}",
@@ -161,11 +161,12 @@ public class ScanQueueMonitor implements Runnable {
 
 		// only process working scans once, so we add to workingScans after processing
 		if (activeScanMap.containsKey(scanId) && !workingScans.contains(scanId)) {
-            //scanWorking.add(scan);
             //FIXME: move block engine to EngineManager by posting to a queue
             //scanWorking.add(scan);
             final long engineId = scan.getEngineId();
-            log.info("Scan is working, blocking engine; scanId={}; engineId={}", scanId, engineId);
+            final int count = concurrentScans.incrementAndGet();
+            log.info("Scan is working, blocking engine; scanId={}; engineId={}; concurrentCount={}; concurrentLimit={}", 
+                    scanId, engineId, count, concurrentScanLimit);
             cxClient.blockEngine(engineId);
 
             // update active scan

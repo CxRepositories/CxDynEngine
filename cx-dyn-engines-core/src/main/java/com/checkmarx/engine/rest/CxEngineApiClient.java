@@ -62,7 +62,7 @@ public class CxEngineApiClient extends BaseHttpClient implements CxEngineApi {
 	
 	private RestTemplate getSastBuilder(RestTemplateBuilder builder) {
 		return super.getRestBuilder(builder)
-				.additionalInterceptors(new CxCookieAuthInterceptor())
+				.additionalInterceptors(new CxRestAuthInterceptor(config))
 				.build();
 	}
 	

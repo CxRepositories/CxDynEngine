@@ -28,6 +28,9 @@ public class CxConfig {
 	private String userName;
 	@JsonIgnore
 	private String password;
+	private String clientId = "resource_owner_client";
+	private String clientSecret;
+	private String scope = "access_control_api sast_rest_api";
 	private int concurrentScanLimit;
 	private String cxEnginePrefix = "**";
 	private boolean cxEngineUseSSL = false;
@@ -58,6 +61,30 @@ public class CxConfig {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getClientId() {
+		return clientId;
+	}
+
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
+	}
+
+	public String getClientSecret() {
+		return clientSecret;
+	}
+
+	public void setClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+	}
+
+	public String getScope() {
+		return scope;
+	}
+
+	public void setScope(String scope) {
+		this.scope = scope;
 	}
 
 	public int getConcurrentScanLimit() {

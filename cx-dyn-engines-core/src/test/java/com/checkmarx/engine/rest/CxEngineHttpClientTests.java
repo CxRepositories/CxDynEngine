@@ -13,11 +13,8 @@
  ******************************************************************************/
  package com.checkmarx.engine.rest;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
+import static org.hamcrest.Matchers.*;
 
 import org.junit.Assume;
 import org.junit.Before;
@@ -47,7 +44,7 @@ public class CxEngineHttpClientTests extends CoreSpringTest {
 		Assume.assumeTrue(super.runCxIntegrationTests());
 		
 		assertThat(client, notNullValue());
-		assertThat(engineIp, is(not(isEmptyOrNullString())));
+		assertThat(engineIp, is(not(emptyOrNullString())));
 		log.debug("engineIp={}", engineIp);
 
 	}

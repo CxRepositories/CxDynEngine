@@ -13,6 +13,10 @@
  ******************************************************************************/
 package com.checkmarx.engine.domain;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
@@ -78,7 +82,7 @@ public class EngineSize implements Comparable<EngineSize> {
 
 	@Override
 	public int compareTo(EngineSize other) {
-		return Long.compare(maxLOC, other.maxLOC);
+		return Long.compare(minLOC, other.minLOC);
 	}
 
 	@Override
@@ -88,5 +92,26 @@ public class EngineSize implements Comparable<EngineSize> {
 				.add("minLOC", minLOC)
 				.add("maxLOC", maxLOC)
 				.toString();
+	}
+	
+    static class SortBySize implements Comparator<EngineSize> {
+        @Override
+        public int compare(EngineSize es1, EngineSize es2) {
+            return es1.compareTo(es2);
+        }
+    }
+
+    public static boolean isOverlap(List<EngineSize> engineSizes) {
+	    Collections.sort(engineSizes, new SortBySize());
+	    for(int i=1; i < engineSizes.size(); i++) {
+	        EngineSize es1 = engineSizes.get(i-1);
+	        EngineSize es2 = engineSizes.get(i);
+	        if (es1.getMaxLOC() > es2.getMinLOC()) {
+	            // overlaps
+	            return true;
+	        }
+	    }
+	    // no overlap
+	    return false;
 	}
 }

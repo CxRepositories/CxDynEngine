@@ -21,11 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.number.OrderingComparison.greaterThan;
-import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
+import static org.hamcrest.Matchers.*;
 
 public class AzureEngineConfigTests extends AzureSpringTest {
 	
@@ -45,9 +42,8 @@ public class AzureEngineConfigTests extends AzureSpringTest {
 		
 		log.info("{}", config);
 		
-		//assertThat(config.getIamProfile(), is(not(isEmptyOrNullString())));
-		assertThat(config.getImageName(), is(not(isEmptyOrNullString())));
-		assertThat(config.getSubnetName(), is(not(isEmptyOrNullString())));
+		assertThat(config.getImageName(), is(not(emptyOrNullString())));
+		assertThat(config.getSubnetName(), is(not(emptyOrNullString())));
 
 		final Map<String, String> sizeMap = config.getEngineSizeMap();
 		assertThat(sizeMap, notNullValue());
@@ -56,7 +52,6 @@ public class AzureEngineConfigTests extends AzureSpringTest {
 		final Map<String, String> tagMap = config.getTagMap();
 		assertThat(tagMap, notNullValue());
 		assertThat(tagMap.values(), hasSize(greaterThan(0)));
-		
 	}
 
 }

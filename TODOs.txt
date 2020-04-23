@@ -17,9 +17,11 @@ Features
 [X] Refactor EngineService/EngineMonitor class structure
 [X] Test NumberOfPromotableScans = 0 (Engine config)
 [X] Clean up unit tests (remove environment dependencies)
-[ ] Support token auth
-[ ] Pool level termination option - stop set at pool level
-[ ] Add minimum provisioned engines
+[X] Support token auth
+[X] Add minimum provisioned engines
+[X] Enhance engine stats - scan counter; idle, scanning, running times
+[ ] Refactor common code from AWS and Azure modules; DRY
+[ ] Expose engine stats via Actuator  
 [ ] Move cx credentials out of CxConfig
 [ ] Add command for creating encrypted values
 [ ] Add AWS credentials
@@ -40,25 +42,3 @@ Fixed
 [ ] Launching multiple scans on startup, exceeds limits
 [ ] Nullpointer when cancel scan from CxPortal
 
-
-RANDY
-[X] Pull out EnginePool config
-[X] Add external spring config for multiple EngineProvisioners
-[X] Modularlize EngineProvisioners
-[X] Scaffold VmwareProvisioner (separate module)
-
-SERGIO
-[X] Define and implement VmwareConfig
-[X] Implement VmwareProvisioner
-
-MOVE SALES
-[ ] Check on IAM Role based AWS authentication
-[X] Support static engines
-[ ] Support minimum running engines
-[X] Restarting DynEngine with engine actively scanning
-     - Check how expiration is handled for existing eng
-     
-CxMS
-[ ] Test start/stop times for large instances
-[ ] Allow start/stop not terminate on pool basis (m5 - 50s)
-[X] Check logic when launching engine times out - should terminate old, launch new engine

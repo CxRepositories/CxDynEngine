@@ -16,10 +16,13 @@
  */
 package com.checkmarx.engine.domain;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
+import java.util.List;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
@@ -29,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.checkmarx.engine.domain.DynamicEngine.EngineStats;
 import com.checkmarx.engine.domain.DynamicEngine.State;
 import com.checkmarx.engine.domain.EnginePool.EnginePoolEntry;
 import com.google.common.collect.Iterables;
@@ -56,18 +60,21 @@ public class EnginePoolTests {
 		config = new EnginePoolConfig();
 
 		pool = new DefaultEnginePoolBuilder(config)
-			.addEntry(new EnginePoolEntry(SMALL, 3))
-			.addEntry(new EnginePoolEntry(MEDIUM, 3))
-			.addEntry(new EnginePoolEntry(LARGE, 3))
+			.addEntry(new EnginePoolEntry(SMALL, 3, 2))
+			.addEntry(new EnginePoolEntry(MEDIUM, 3, 1))
+			.addEntry(new EnginePoolEntry(LARGE, 3, 0))
 			.build();
-	}
+		
+		config.validate();
 
+		log.info("{}", pool);
+	}
+	
 	@Test
 	public void testInit() {
 		log.trace("testInit()");
 		
 		pool.logEngines();
-		log.debug("{}", pool);
 
 		assertEquals(9, pool.getAllEnginesByName().size());
 		
@@ -112,15 +119,65 @@ public class EnginePoolTests {
 
 		engine = pool.allocateEngine(SMALL, State.UNPROVISIONED);
 		assertThat(engine, is(notNullValue()));
-		pool.changeState(engine, State.IDLE);
+        assertThat(engine.getState(), is(State.ALLOCATED));
+		engine.onStart(DateTime.now());
+		engine.onIdle();
 		engine = pool.allocateEngine(SMALL, State.UNPROVISIONED);
 		assertThat(engine, is(notNullValue()));
-		pool.changeState(engine, State.IDLE);
+        assertThat(engine.getState(), is(State.ALLOCATED));
+        engine.onStart(DateTime.now());
+        engine.onIdle();
 		engine = pool.allocateEngine(SMALL, State.UNPROVISIONED);
 		assertThat(engine, is(notNullValue()));
-		pool.changeState(engine, State.IDLE);
+        assertThat(engine.getState(), is(State.ALLOCATED));
+        engine.onStart(DateTime.now());
+        engine.onIdle();
 		engine = pool.allocateEngine(SMALL, State.UNPROVISIONED);
 		assertThat(engine, is(nullValue()));
+	}
+	
+	@Test
+	public void testAllocateMinIdleEngines() {
+        log.trace("testAllocateMinIdleEngines()");
+        
+        // pool starts with 3 min engines
+
+        // set one engine to IDLE
+        DynamicEngine engine = pool.allocateEngine(SMALL, State.UNPROVISIONED);
+        assertThat(engine, is(notNullValue()));
+        assertThat(engine.getState(), is(State.ALLOCATED));
+        engine.onStart(DateTime.now());
+        engine.onIdle();
+        assertThat(engine.getState(), is(State.IDLE));
+
+        engine = pool.allocateEngine(MEDIUM, State.UNPROVISIONED);
+        assertThat(engine, is(notNullValue()));
+        assertThat(engine.getState(), is(State.ALLOCATED));
+        engine.onStart(DateTime.now());
+        engine.onScan();
+        assertThat(engine.getState(), is(State.SCANNING));
+
+        // should allocate 1 remaining min SMALL engine
+        final List<DynamicEngine> engines = pool.allocateMinIdleEngines();
+        assertThat(engines.size(), is(1));
+        engine = engines.get(0);
+        assertThat(engine.getSize(), is(SMALL.getName()));
+        assertThat(engine.getState(), is(State.ALLOCATED));
+
+        // should have one remaining SMALL IDLE engine
+        engine = pool.allocateEngine(SMALL, State.IDLE);
+        assertThat(engine, is(notNullValue()));
+        assertThat(engine.getState(), is(State.ALLOCATED));
+        engine.onScan();
+        assertThat(engine.getState(), is(State.SCANNING));
+
+        // should NOT have a MEDIUM IDLE engine
+        engine = pool.allocateEngine(MEDIUM, State.IDLE);
+        assertThat(engine, is(nullValue()));
+
+        // should have no LARGE IDLE engines
+        engine = pool.allocateEngine(LARGE, State.IDLE);
+        assertThat(engine, is(nullValue()));
 	}
 	
 	
@@ -129,15 +186,22 @@ public class EnginePoolTests {
 		log.trace("testChangeState()");
 		
 		final DynamicEngine engine = Iterables.getFirst(pool.getUnprovisionedEngines().get(SMALL.getName()), null);
+        engine.onStart(DateTime.now());
+        EngineStats stats = engine.getStats();
 		String size = engine.getSize();
 		
-		pool.changeState(engine, State.SCANNING);
+        Thread.sleep(100);
+
+        engine.onScan();
 		assertEquals(1, pool.getActiveEngines().get(size).size());
 		assertEquals(2, pool.getUnprovisionedEngines().get(size).size());
 		assertEquals(State.SCANNING, engine.getState());
 		
-		Thread.sleep(100);
-		assertTrue(engine.getElapsedTime().getMillis() >= 100);
+		Thread.sleep(110);
+		//assertTrue(engine.getElapsedTime().getMillis() >= 100);
+        assertThat("scanTime", stats.getCurrentScanTime().getMillis(), greaterThanOrEqualTo(100L));
+        assertThat("runTime", stats.getCurrentRunTime().getMillis(), greaterThanOrEqualTo(200L));
+        assertThat("runTime > scanTime", stats.getCurrentRunTime().getMillis(), greaterThan(stats.getCurrentScanTime().getMillis()));
 
 		pool.logEngines();
 	}
@@ -151,8 +215,10 @@ public class EnginePoolTests {
 		final String name = e.getName();
 		
 		final DynamicEngine newEngine = new DynamicEngine(name, e.getSize(), 300);
-		newEngine.setState(State.IDLE);
-		newEngine.setHost(new Host(name, "ip", "url", DateTime.now()));
+		DateTime now = DateTime.now();
+		newEngine.onStart(now);
+		newEngine.onIdle();
+		newEngine.setHost(new Host(name, "ip", "url", now));
 		assertEquals(newEngine, e);
 		
 		final DynamicEngine oldEngine = pool.addExistingEngine(newEngine);
@@ -176,7 +242,7 @@ public class EnginePoolTests {
 		assertEquals(MEDIUM, pool.calcEngineSize(499999));
 		assertEquals(LARGE, pool.calcEngineSize(500000));
 		assertEquals(LARGE, pool.calcEngineSize(999999999));
-		assertNull(pool.calcEngineSize(100000000000L));
+		assertThat(pool.calcEngineSize(100000000000L), is(nullValue()));
 	}
 	
 }

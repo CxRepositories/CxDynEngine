@@ -69,12 +69,12 @@ public class CxEngineHttpClient extends BaseHttpClient implements CxEngineClient
 				final ResponseEntity<String> response = engineClient.getForEntity(url, String.class);
 				return response.getBody();
 			});
-			log.debug("pingEngine: host={}; response={}", host, payload.substring(0, 120));
+			log.trace("pingEngine: host={}; response={}", host, payload.substring(0, 120));
 			
 			return true;
 			
 		} catch (RestClientException ex) {
-			log.debug("pingEngine failed: host={}; message={}", host, ex.getMessage());
+			log.trace("pingEngine failed: host={}; message={}", host, ex.getMessage());
 			return false;
 		}
 	}
@@ -91,7 +91,7 @@ public class CxEngineHttpClient extends BaseHttpClient implements CxEngineClient
 	@Override
 	public String buildEngineServiceUrl(String host) {
 		if (Strings.isNullOrEmpty(host)) return null;
-		final String url =  getProtocol() + host + config.getCxEngineUrlPath();
+		final String url =  buildEngineServerUrl(host) + config.getCxEngineUrlPath();
 		return url;
 	}
 

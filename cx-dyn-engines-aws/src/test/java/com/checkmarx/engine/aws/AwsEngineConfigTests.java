@@ -13,13 +13,8 @@
  ******************************************************************************/
 package com.checkmarx.engine.aws;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.number.OrderingComparison.greaterThan;
-import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
+import static org.hamcrest.Matchers.*;
 
 import java.util.Map;
 
@@ -47,11 +42,11 @@ public class AwsEngineConfigTests extends AwsSpringTest {
 		
 		log.info("{}", config);
 		
-		assertThat(config.getIamProfile(), is(not(isEmptyOrNullString())));
-		assertThat(config.getImageId(), is(not(isEmptyOrNullString())));
-		assertThat(config.getKeyName(), is(not(isEmptyOrNullString())));
-		assertThat(config.getSecurityGroup(), is(not(isEmptyOrNullString())));
-		assertThat(config.getSubnetId(), is(not(isEmptyOrNullString())));
+		assertThat(config.getIamProfile(), is(not(emptyOrNullString())));
+		assertThat(config.getImageId(), is(not(emptyOrNullString())));
+		assertThat(config.getKeyName(), is(not(emptyOrNullString())));
+		assertThat(config.getSecurityGroup(), is(not(emptyOrNullString())));
+		assertThat(config.getSubnetId(), is(not(emptyOrNullString())));
 
 		final Map<String, String> sizeMap = config.getEngineSizeMap();
 		assertThat(sizeMap, notNullValue());

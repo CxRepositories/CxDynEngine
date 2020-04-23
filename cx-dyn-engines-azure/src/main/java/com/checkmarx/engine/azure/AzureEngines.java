@@ -182,7 +182,7 @@ public class AzureEngines implements CxEngines {
 		final String engineId = lookupEngineId(instance);
 		final DynamicEngine engine = DynamicEngine.fromProvisionedInstance(
 				name, size, poolConfig.getEngineExpireIntervalSecs(),
-				launchTime, isRunning, scanId, engineId);
+				launchTime, launchTime, isRunning, scanId, engineId);
 		if (isRunning) {
 			engine.setHost(createHost(name, instance));
 		}
@@ -240,6 +240,7 @@ public class AzureEngines implements CxEngines {
 			}
 			else{
 				instance = launchEngine(engine, name, type, tags);
+				engine.onLaunch(DateTime.now());
 			}
 			instanceId = instance.id();
 			//refresh instance state
@@ -266,6 +267,7 @@ public class AzureEngines implements CxEngines {
 			
 			final Host host = createHost(name, instance);
 			engine.setHost(host);
+			engine.onStart(host.getLaunchTime());
 			
 			if (waitForSpinup) {
 				pingEngine(host);
@@ -326,11 +328,14 @@ public class AzureEngines implements CxEngines {
 				action = "TerminatedEngine";
 				azureClient.terminate(instanceId);
 				provisionedEngines.remove(name);
+                engine.onTerminate();
 				runScript(azureConfig.getScriptOnTerminate(), engine);
 			} else {
 				azureClient.stop(instanceId);
 				instance = azureClient.describe(instanceId);
 				provisionedEngines.put(name, instance);
+                engine.onStop();
+                runScript(azureConfig.getScriptOnStop(), engine);
 			}
 			success = true;
 			

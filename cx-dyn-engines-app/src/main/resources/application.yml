@@ -1,8 +1,15 @@
+# only needed if using groovy scripting, to avoid Spring template warning
+spring:
+  groovy:
+    template:
+      check-template-location: false
+
 server:
   port: 8585 #Port for webserver to run (/health endpoint can be used to monitor service is up)
 
 logging:
-  file: cx-engines.log
+  file:
+    name: cx-engines.log
   level:
     com:
       checkmarx:
@@ -13,7 +20,7 @@ logging:
       springframework: INFO
 
 cx:
-  cxEngineUseSSL: true #Use http/https to monitor and register Engines with
+  cxEngineUseSSL: false #Use http/https to monitor and register Engines with
   concurrentScanLimit: 3 #Max number of concurrent scans (Engines) that DE will manage
   cxEnginePrefix: '**' #Prefix used within Registering engine in CX UI
   expireEngineBufferMins: 1 #Grace period before expiring and engine
@@ -41,8 +48,8 @@ cx-aws-engine:
   keyName: Cx_DE #AWS Key name for support purposes
   launchTimeoutSec: 60 #Amount of time to wait for an instance to move out of PENDING state in AWS
   monitorPollingIntervalSecs: 10 #Number of seconds before checking both Instance state and checking if the the HTTP endpoint is available on the Engine
-  scriptOnLaunch: scripts/launch.groovy
-  scriptOnTerminate: scripts/terminate.groovy
+#  scriptOnLaunch: scripts/launch.groovy
+#  scriptOnTerminate: scripts/terminate.groovy
   securityGroup: sg-04ed28298b8ec3106 #AWS Security Group to apply to launched Engines
   stopWaitTimeSecs: 30    #time to wait for a stopping engine before attempting to start 
   subnetId: subnet-39b72265 #AWS Subnet ID to launch Engines into
@@ -65,8 +72,8 @@ cx-azure-engine:
 #    L: Standard_DS2_v2
   launchTimeoutSec: 60            #Amount of time to wait for an instance to move out of PENDING state in AWS
   monitorPollingIntervalSecs: 10  #Number of seconds before checking both Instance state and checking if the the HTTP endpoint is available on the Engine
-  scriptOnLaunch: scripts/launch.groovy
-  scriptOnTerminate: scripts/terminate.groovy
+# scriptOnLaunch: scripts/launch.groovy
+# scriptOnTerminate: scripts/terminate.groovy
 #  tagMap: #Tags that will be applied to instance (used to listing/tracking available engines)
 #    Component: cx-de
 #    Owner: abc

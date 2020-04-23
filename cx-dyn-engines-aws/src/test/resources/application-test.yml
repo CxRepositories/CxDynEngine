@@ -1,3 +1,9 @@
+# only needed if using groovy scripting, to avoid Spring template warning
+spring:
+  groovy:
+    template:
+      check-template-location: false
+
 cx:
   cxEngineUseSSL: false           #Use http/https to monitor and register Engines with
   concurrentScanLimit: 3          #Max number of concurrent scans (Engines) that DE will manage
@@ -17,7 +23,7 @@ cx:
 cx-aws-engine:
   assignPublicIP: true
   cxEngineTimeoutSec: 600         #how many seconds to wait for instance to launch before considered a failure
-  cxVersion: 8.8.0-HF1
+  cxVersion: 8.9.0
   engineSizeMap:
     S: t3.medium
     M: t3.large
@@ -28,6 +34,7 @@ cx-aws-engine:
   launchTimeoutSec: 60            #Amount of time to wait for an instance to move out of PENDING state in AWS
   monitorPollingIntervalSecs: 10  #Number of seconds before checking both Instance state and checking if the the HTTP endpoint is available on the Engine
   scriptOnLaunch: scripts/launch.groovy
+  scriptOnStop: scripts/stop.groovy
   scriptOnTerminate: scripts/terminate.groovy
   securityGroup: sg-a0e70bdc      #AWS Security Group to apply to launched Engines
   stopWaitTimeSecs: 30

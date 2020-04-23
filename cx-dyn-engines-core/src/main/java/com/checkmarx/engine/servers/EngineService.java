@@ -61,7 +61,10 @@ public class EngineService implements Runnable {
 		final int pollingInterval = config.getQueueIntervalSecs();
 		try {
 		
-		    engineManager.initialize();
+            taskManager.addExecutor("EngineManagerExecutor", engineManagerExecutor);
+            taskManager.addExecutor("ScanQueueExecutor", scanQueueExecutor);
+
+            engineManager.initialize();
 		    
 			log.info("Launching EngineManager...");
 			taskManager.addTask("EngineManager", engineManagerExecutor.submit(engineManager));
@@ -86,8 +89,8 @@ public class EngineService implements Runnable {
 	private void shutdown() {
 		log.info("shutdown()");
 
+        // taskManager will shutdown executors and cancel all tasks
 		taskManager.shutdown();
-		// taskManager will shutdown executors and cancel all tasks
 		//engineManagerExecutor.shutdown();
 		//scanQueueExecutor.shutdown();
 	}

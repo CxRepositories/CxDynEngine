@@ -29,6 +29,7 @@ cx-azure-engine:
   launchTimeoutSec: 60            #Amount of time to wait for an instance to move out of PENDING state in AWS
   monitorPollingIntervalSecs: 10  #Number of seconds before checking both Instance state and checking if the the HTTP endpoint is available on the Engine
   scriptOnLaunch: scripts/launch.groovy
+  scriptOnStop: scripts/stop.groovy
   scriptOnTerminate: scripts/terminate.groovy
   tagMap:
     Component: cx-de

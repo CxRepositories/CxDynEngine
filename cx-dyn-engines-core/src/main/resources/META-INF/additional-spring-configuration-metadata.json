@@ -1,105 +1,113 @@
-{"groups": [
-  {
-    "name": "cx",
-    "type": "com.checkmarx.engine.CxConfig",
-    "sourceType": "com.checkmarx.engine.CxConfig",
-    "description": "Configuration items governing CxSAST Dynamic Engines behavior"
-  },
-  {
-    "name": "cx-engine",
-    "type": "com.checkmarx.engine.domain.EnginePoolConfig",
-    "sourceType": "com.checkmarx.engine.domain.EnginePoolConfig",
-    "description": "Configuration for declaring engine pools for CxSAST Dynamic Engines"
-  }
-],"properties": [
-  {
-    "name": "cx.userName",
-    "type": "java.lang.String",
-    "description": "Username for CxSAST"
-  },
-  {
-    "name": "cx.password",
-    "type": "java.lang.String",
-    "description": "Password for CxSAST"
-  },
-  {
-    "name": "cx.concurrentScanLimit",
-    "type": "java.lang.String",
-    "description": "Maximum concurrent scans"
-  },
-  {
-    "name": "cx.cxEnginePrefix",
-    "type": "java.lang.String",
-    "description": "Prefix for dynamic engine name when registering with CxManager"
-  },
-  {
-    "name": "cx.cxEngineUseSSL",
-    "type": "java.lang.Boolean",
-    "description": "If 'true', register CxEngines with https: protocol, otherwise http: will be used"
-  },
-  {
-    "name": "cx.expireEngineBufferMins",
-    "type": "java.lang.Integer",
-    "description": "Amount of time in minutes to use as a buffer for expiring engines"
-  },
-  {
-    "name": "cx.idleMonitorSecs",
-    "type": "java.lang.Integer",
-    "description": "Period to use for checking for idle engines"
-  },
-  {
-    "name": "cx.queueCapacity",
-    "type": "java.lang.Integer",
-    "description": "Blocking queue capacity"
-  },
-  {
-    "name": "cx.queueIntervalSecs",
-    "type": "java.lang.Integer",
-    "description": "Cx queue polling interval in seconds"
-  },
-  {
-    "name": "cx.queueingEngineName",
-    "type": "java.lang.String",
-    "description": "Name of the blocked engines used for to prevent scans from failing"
-  },
-  {
-    "name": "cx.restUrl",
-    "type": "java.lang.String",
-    "description": "Url for CxSAST"
-  },
-  {
-    "name": "cx.timeoutSecs",
-    "type": "java.lang.String",
-    "description": "A description for 'cx.timeoutSecs'"
-  },
-  {
-    "name": "cx.terminateOnStop",
-    "type": "java.lang.Boolean",
-    "description": "If 'true', terminate engine when idle engine expires; otherwise, stop engine"
-  },
-  {
-    "name": "cx.userAgent",
-    "type": "java.lang.String",
-    "description": "String to use for the the HTTP User-Agent during Rest requests"
-  },
-  {
-    "name": "cx.notificationId",
-    "type": "java.lang.String",
-    "description": "Identifier used when sending alert notifications. Format depends on Notification provider."
-  },
-  {
-    "name": "cx-engine.pool",
-    "type": "java.util.List<com.checkmarx.engine.domain.EnginePoolEntry>",
-    "description": "Engine pool entries"
-  },
-  {
-    "name": "cx-engine.engineExpireIntervalSecs",
-    "type": "java.lang.Integer",
-    "description": "Expiration time interval for a dynamic engine"
-  },
-  {
-    "name": "cx-engine.enginePrefix",
-    "type": "java.lang.String",
-    "description": "The prefix to prepend to IAAS engine server names"
-  }
-]}
+{
+  "groups": [
+    {
+      "name": "cx",
+      "type": "com.checkmarx.engine.CxConfig",
+      "sourceType": "com.checkmarx.engine.CxConfig",
+      "description": "Configuration items governing CxSAST Dynamic Engines behavior"
+    },
+    {
+      "name": "cx-engine",
+      "type": "com.checkmarx.engine.domain.EnginePoolConfig",
+      "sourceType": "com.checkmarx.engine.domain.EnginePoolConfig",
+      "description": "Configuration for declaring engine pools for CxSAST Dynamic Engines"
+    }
+  ],
+  "properties": [
+    {
+      "name": "cx.userName",
+      "type": "java.lang.String",
+      "description": "Username for CxSAST"
+    },
+    {
+      "name": "cx.password",
+      "type": "java.lang.String",
+      "description": "Password for CxSAST"
+    },
+    {
+      "name": "cx.concurrentScanLimit",
+      "type": "java.lang.String",
+      "description": "Maximum concurrent scans"
+    },
+    {
+      "name": "cx.cxEnginePrefix",
+      "type": "java.lang.String",
+      "description": "Prefix for dynamic engine name when registering with CxManager"
+    },
+    {
+      "name": "cx.cxEngineUseSSL",
+      "type": "java.lang.Boolean",
+      "description": "If 'true', register CxEngines with https: protocol, otherwise http: will be used"
+    },
+    {
+      "name": "cx.expireEngineBufferMins",
+      "type": "java.lang.Integer",
+      "description": "Amount of time in minutes to use as a buffer for expiring engines"
+    },
+    {
+      "name": "cx.idleMonitorSecs",
+      "type": "java.lang.Integer",
+      "description": "Period to use for checking for idle engines"
+    },
+    {
+      "name": "cx.queueCapacity",
+      "type": "java.lang.Integer",
+      "description": "Blocking queue capacity"
+    },
+    {
+      "name": "cx.queueIntervalSecs",
+      "type": "java.lang.Integer",
+      "description": "Cx queue polling interval in seconds"
+    },
+    {
+      "name": "cx.queueingEngineName",
+      "type": "java.lang.String",
+      "description": "Name of the blocked engines used for to prevent scans from failing"
+    },
+    {
+      "name": "cx.restUrl",
+      "type": "java.lang.String",
+      "description": "Url for CxSAST"
+    },
+    {
+      "name": "cx.timeoutSecs",
+      "type": "java.lang.String",
+      "description": "A description for 'cx.timeoutSecs'"
+    },
+    {
+      "name": "cx.terminateOnStop",
+      "type": "java.lang.Boolean",
+      "description": "If 'true', terminate engine when idle engine expires; otherwise, stop engine"
+    },
+    {
+      "name": "cx.userAgent",
+      "type": "java.lang.String",
+      "description": "String to use for the the HTTP User-Agent during Rest requests"
+    },
+    {
+      "name": "cx.notificationId",
+      "type": "java.lang.String",
+      "description": "Identifier used when sending alert notifications. Format depends on Notification provider."
+    },
+    {
+      "name": "cx-engine.pool",
+      "type": "java.util.List<com.checkmarx.engine.domain.EnginePoolEntry>",
+      "description": "Engine pool entries"
+    },
+    {
+      "name": "cx-engine.engineExpireIntervalSecs",
+      "type": "java.lang.Integer",
+      "description": "Expiration time interval for a dynamic engine"
+    },
+    {
+      "name": "cx-engine.enginePrefix",
+      "type": "java.lang.String",
+      "description": "The prefix to prepend to IAAS engine server names"
+    },
+    {
+      "name": "cx-aws-engine.scriptOnStop",
+      "type": "java.lang.String",
+      "description": "A description for 'cx-aws-engine.scriptOnStop'"
+    }
+  ]
+}

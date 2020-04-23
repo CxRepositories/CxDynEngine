@@ -47,6 +47,7 @@ public class AwsEngineConfig {
 	private String ssmAutomationDocument = "AWS-StopEC2Instance";
 
 	private String scriptOnLaunch;
+    private String scriptOnStop;
 	private String scriptOnTerminate;
 
 	/**
@@ -198,7 +199,18 @@ public class AwsEngineConfig {
 		this.scriptOnLaunch = scriptOnLaunch;
 	}
 
-	/**
+    /**
+     * @return script file to execute on engine stop
+     */
+	public String getScriptOnStop() {
+        return scriptOnStop;
+    }
+
+    public void setScriptOnStop(String scriptOnStop) {
+        this.scriptOnStop = scriptOnStop;
+    }
+
+    /**
 	 * @return script file to execute on engine termination
 	 */
 	public String getScriptOnTerminate() {
@@ -262,6 +274,7 @@ public class AwsEngineConfig {
 				.add("securityGroup", securityGroup)
 				.add("launchTimeoutSec", launchTimeoutSec)
 				.add("scriptOnLaunch", scriptOnLaunch)
+                .add("scriptOnStop", scriptOnStop)
 				.add("scriptOnTerminate", scriptOnTerminate)
 				.add("stopWaitTimeSecs", stopWaitTimeSecs)
 				.add("terminateOnStop", terminateOnStop)

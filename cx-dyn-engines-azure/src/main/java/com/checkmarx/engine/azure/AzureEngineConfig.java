@@ -55,6 +55,7 @@ public class AzureEngineConfig {
 	private boolean usePublicUrlForCx = false;
 	private boolean usePublicUrlForMonitor = false;
 	private String scriptOnLaunch;
+    private String scriptOnStop;
 	private String scriptOnTerminate;
 
 	public String getSubscriptionId() {
@@ -193,6 +194,17 @@ public class AzureEngineConfig {
 		this.scriptOnLaunch = scriptOnLaunch;
 	}
 
+    /**
+     * @return script file to execute on engine stop
+     */
+    public String getScriptOnStop() {
+        return scriptOnStop;
+    }
+
+    public void setScriptOnStop(String scriptOnStop) {
+        this.scriptOnStop = scriptOnStop;
+    }
+
 	/**
 	 * @return script file to execute on engine termination
 	 */
@@ -200,7 +212,7 @@ public class AzureEngineConfig {
 		return scriptOnTerminate;
 	}
 
-	public void setScriptOnTerminate(String scriptOnTerminate) {
+    public void setScriptOnTerminate(String scriptOnTerminate) {
 		this.scriptOnTerminate = scriptOnTerminate;
 	}
 
@@ -308,6 +320,7 @@ public class AzureEngineConfig {
 				.add("monitorPollingIntervalSecs", monitorPollingIntervalSecs)
 				.add("launchTimeoutSec", launchTimeoutSec)
 				.add("scriptOnLaunch", scriptOnLaunch)
+                .add("scriptOnStop", scriptOnStop)
 				.add("scriptOnTerminate", scriptOnTerminate)
 				.add("usePublicUrlForCx", usePublicUrlForCx)
 				.add("usePublicUrlForMonitor", usePublicUrlForMonitor)

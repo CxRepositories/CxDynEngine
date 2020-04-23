@@ -34,6 +34,7 @@ public class Host {
 	private final String cxManagerUrl;
 	private final String monitorUrl;
 	private final DateTime launchTime;
+	private final DateTime startTime;
 	
 	public Host(String name, String privateIp, String managerUrl, DateTime launchTime) {
 		this(name, privateIp, null, managerUrl, null, launchTime);
@@ -41,14 +42,19 @@ public class Host {
 	
 	public Host(String name, String privateIp, String publicIp, 
 			String managerUrl, String monitorUrl, DateTime launchTime) {
-		super();
-		this.name = name;
-		this.privateIp = privateIp;
-		this.publicIp = publicIp;
-		this.cxManagerUrl = managerUrl;
-		this.monitorUrl = monitorUrl;
-		this.launchTime = launchTime;
+        this(name, privateIp, publicIp, managerUrl, monitorUrl, launchTime, launchTime);
 	}
+
+    public Host(String name, String privateIp, String publicIp, 
+            String managerUrl, String monitorUrl, DateTime launchTime, DateTime startTime) {
+        this.name = name;
+        this.privateIp = privateIp;
+        this.publicIp = publicIp;
+        this.cxManagerUrl = managerUrl;
+        this.monitorUrl = monitorUrl;
+        this.launchTime = launchTime;
+        this.startTime = startTime;
+    }
 
 	public String getName() {
 		return name;
@@ -80,9 +86,13 @@ public class Host {
 		return launchTime;
 	}
 
-	@Override
+	public DateTime getStartTime() {
+        return startTime;
+    }
+
+    @Override
 	public int hashCode() {
-		return Objects.hash(name, privateIp, cxManagerUrl);
+		return Objects.hash(name, privateIp, publicIp, cxManagerUrl);
 	}
 
 	@Override
@@ -93,7 +103,8 @@ public class Host {
 		final Host other = (Host) obj;
 		return Objects.equals(this.name, other.name)
 				&& Objects.equals(this.privateIp, other.privateIp)
-				&& Objects.equals(this.publicIp, other.publicIp);
+				&& Objects.equals(this.publicIp, other.publicIp)
+				&& Objects.equals(this.cxManagerUrl, other.cxManagerUrl);
 	}
 
 	@Override
@@ -105,6 +116,7 @@ public class Host {
 				.add("cxManagerUrl", cxManagerUrl)
 				.add("monitorUrl", monitorUrl)
 				.add("launchTime", launchTime)
+                .add("startTime", startTime)
 				.toString();
 	}
 
